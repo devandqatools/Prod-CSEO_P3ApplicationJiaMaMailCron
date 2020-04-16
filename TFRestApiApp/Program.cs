@@ -26,7 +26,7 @@ namespace TFRestApiApp
         //https://dev.azure.com/<your_org>/ for devops azure 
         static readonly string UserAccount = "";
         static readonly string UserPassword = "";
-        static readonly string UserPAT = "fcigllokhrdkt5njzrgchjkszypluxmfcwcigeu5edlkizvif63q";
+        static readonly string UserPAT = "";
         //https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops
 
         static WorkItemTrackingHttpClient WitClient;
@@ -802,7 +802,7 @@ namespace TFRestApiApp
             System.Data.DataTable dt = new System.Data.DataTable();
             SqlCommand cmd = new SqlCommand();
             string dbConn = null;
-            dbConn = @"Data Source = airtproddbserver.database.windows.net; user id=AIRTReader; password=Reader_AIRT@12; Initial Catalog = AIRTProd;";
+            dbConn = @"";
             cmd.CommandText = QueryName;
             SqlConnection sqlConnection1 = new SqlConnection(dbConn);
             cmd.Connection = sqlConnection1;
