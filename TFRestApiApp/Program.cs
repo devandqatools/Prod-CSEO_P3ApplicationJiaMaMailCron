@@ -53,13 +53,12 @@ namespace TFRestApiApp
         public static DataTable dt_GradeReviewAssessmentCompleted = new DataTable();
         public static DataTable dt_FY20GradeC = new DataTable();
         public static DataTable dt_FY20UserStoryCount = new DataTable();
+        public static DataTable dt_BugRemediationPostCSEOAssessmentNotStarted = new DataTable();
+        public static DataTable dt_BugRemediationPostCSEOAssessmentInProgress = new DataTable();
 
         static void Main(string[] args)
         {
             dt_AllRecordsInAirt = connectAndGetDataFromAIRTDB(TN_RecordsInAIRT, ConfigurationManager.AppSettings["allRecords"]);
-
-            
-
 
             /* WorkItemType, WorkItemID, Title, Tags, RecordID, NameDesc,group, Subgroup,Priority,
              * Grade,OpsStatus,ServiceOffering,isDeletedRecordInAIRT */
@@ -124,6 +123,16 @@ namespace TFRestApiApp
             dt_GradeReviewAssessmentCompleted.Columns.Add("WorkItemID", typeof(string));
             dt_GradeReviewAssessmentCompleted.Columns.Add("SubGroup", typeof(string));
             dt_GradeReviewAssessmentCompleted.Columns.Add("ServiceLine", typeof(string));
+
+            //dt_BugRemediationPostCSEOAssessmentNotStarted
+            dt_BugRemediationPostCSEOAssessmentNotStarted.Columns.Add("WorkItemID", typeof(string));
+            dt_BugRemediationPostCSEOAssessmentNotStarted.Columns.Add("SubGroup", typeof(string));
+            dt_BugRemediationPostCSEOAssessmentNotStarted.Columns.Add("ServiceLine", typeof(string));
+
+            //dt_BugRemediationPostCSEOAssessmentInProgress
+            dt_BugRemediationPostCSEOAssessmentInProgress.Columns.Add("WorkItemID", typeof(string));
+            dt_BugRemediationPostCSEOAssessmentInProgress.Columns.Add("SubGroup", typeof(string));
+            dt_BugRemediationPostCSEOAssessmentInProgress.Columns.Add("ServiceLine", typeof(string));
 
             dt_FY20GradeC.Columns.Add("WorkItemID", typeof(string));
             dt_FY20GradeC.Columns.Add("SubGroup", typeof(string));
@@ -548,6 +557,29 @@ namespace TFRestApiApp
 
                                         Console.WriteLine("Condition11 identified...!");
                                     }
+
+                                    if (taskTitle.Contains("activity: bug remediation and verification post grade review") && taskFieldValue_TaskState.ToString() == "New")
+                                    {
+                                        string cndt14_userStoryID = wiID.ToString();
+                                        string cndt14_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt14_userStoryID)["ServiceOffering"].ToString());
+                                        string cndt14_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt14_userStoryID)["Subgroup"].ToString());
+
+                                        dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Add(cndt14_userStoryID, cndt14_SubGroup, cndt14_ServiceOffering);
+
+                                        Console.WriteLine("Condition14 identified...!");
+                                    }
+
+                                    if (taskTitle.Contains("activity: bug remediation and verification post grade review") && taskFieldValue_TaskState.ToString() == "Active")
+                                    {
+                                        string cndt15_userStoryID = wiID.ToString();
+                                        string cndt15_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt15_userStoryID)["ServiceOffering"].ToString());
+                                        string cndt15_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt15_userStoryID)["Subgroup"].ToString());
+
+                                        dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Add(cndt15_userStoryID, cndt15_SubGroup, cndt15_ServiceOffering);
+
+                                        Console.WriteLine("Condition14 identified...!");
+                                    }
+
                                     //}
                                 }
                             }
@@ -558,6 +590,8 @@ namespace TFRestApiApp
 
             List<DataTable> dataTableList = new List<DataTable>();
             dataTableList.Add(dt_FY20GradeC);
+            dataTableList.Add(dt_BugRemediationPostCSEOAssessmentInProgress);
+            dataTableList.Add(dt_BugRemediationPostCSEOAssessmentNotStarted);
             dataTableList.Add(dt_GradeReviewAssessmentCompleted);
             dataTableList.Add(dt_GradeReviewAssessmentInProgress);
             dataTableList.Add(dt_ScheduledForGradeReviewAssessment);
@@ -802,7 +836,7 @@ namespace TFRestApiApp
             System.Data.DataTable dt = new System.Data.DataTable();
             SqlCommand cmd = new SqlCommand();
             string dbConn = null;
-            dbConn = @"";
+            dbConn = @"Data Source = ";
             cmd.CommandText = QueryName;
             SqlConnection sqlConnection1 = new SqlConnection(dbConn);
             cmd.Connection = sqlConnection1;
@@ -1003,23 +1037,25 @@ namespace TFRestApiApp
             builder.Append("<body>");
             builder.Append("<table>");
             builder.Append("<tr class=\"rowheader rh1\">");
-            builder.Append("<th colspan=\"15\" scope=\"colgroup\">CSEO FY20 P3 Accessibility Progress Scorecard</th>");
+            builder.Append("<th colspan=\"17\" scope=\"colgroup\">CSEO FY20 P3 Accessibility Progress Scorecard</th>");
             builder.Append("</tr>");
             builder.Append("<tr class=\"rowheader\">");
             builder.Append("<th><b>CSEO Organization</b></th>");
             builder.Append("<th><b>Service Group</b></th>");
-            builder.Append("<th><b>Self Assessment To Start</b></th>");
+            builder.Append("<th><b>Self-Assessment Ready To Start</b></th>");
             builder.Append("<th><b>Self-Assessment In Progress</b></th>");
             builder.Append("<th><b>Self-Assessment Completed</b></th>");
-            builder.Append("<th><b>Bug Remediation Post Self Assessment Not Started</b></th>");
-            builder.Append("<th><b>Bug Remediation Post Self Assessment Started</b></th>");
-            builder.Append("<th><b>Bug Remediation Post Self Assessment Completed</b></th>");
-            builder.Append("<th><b>Ready for Assessment Service Onboarding</b></th>");
-            builder.Append("<th><b>Assessment Service Onboarding In Progress</b></th>");
-            builder.Append("<th><b>Scheduled for Grade Review Assessment</b></th>");
-            builder.Append("<th><b>Grade Review Assessment in Progress</b></th>");
-            builder.Append("<th><b>Grade Review Assessment Completed</b></th>");
-            builder.Append("<th><b>P3 Applications Grade C Applications Count</b></th>");
+            builder.Append("<th><b>Bug Remediation Post Self-Assessment Not Started</b></th>");
+            builder.Append("<th><b>Bug Remediation Post Self-Assessment In Progress</b></th>");
+            builder.Append("<th><b>Bug Remediation Post Self-Assessment Completed</b></th>");
+            builder.Append("<th><b>CSEO Assessment Onboarding Ready to Start</b></th>");
+            builder.Append("<th><b>CSEO Assessment Onboarding In Progress</b></th>");
+            builder.Append("<th><b>CSEO Assessment Onboarding Completed</b></th>");
+            builder.Append("<th><b>CSEO Assessment Grade Review In Progress</b></th>");
+            builder.Append("<th><b>CSEO Assessment Grade Review Completed</b></th>");
+            builder.Append("<th><b>Bug Remediation Post CSEO Assessment Not Started</b></th>");
+            builder.Append("<th><b>Bug Remediation Post CSEO Assessment In Progress</b></th>");
+            builder.Append("<th><b>CSEO Assessment Grade C Received</b></th>");
             builder.Append("<th><b>P3 Applications User Story Count</b></th>");
             builder.Append("</tr>");
             
@@ -1041,6 +1077,8 @@ namespace TFRestApiApp
             int condition_11_UserStoryCount = 0;
             int condition_12_UserStoryCount = 0;
             int condition_13_UserStoryCount = 0;
+            int condition_14_BugRemediationPostCSEOAssessmentNotStarted = 0;
+            int condition_15_BugRemediationPostCSEOAssessmentInProgress = 0;
 
             foreach (DataRow SubGroup in distinct_SubGroup.Rows)
             {
@@ -1077,7 +1115,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#7B74F3\">" + condition_1_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_1_UserStoryCount + "</b></td>");
                         }
                         
 
@@ -1092,7 +1130,7 @@ namespace TFRestApiApp
                             builder.Append("<td class=\"text-td\">" + condition_2_UserStoryCount + "</td>");
                         } else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#756BCA\">" + condition_2_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_2_UserStoryCount + "</b></td>");
                         }
                         
 
@@ -1108,7 +1146,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#8EE07D\">" + condition_3_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_3_UserStoryCount + "</b></td>");
                         }
 
                         //dt_BugRemediationPostSelfAssessmentNotStarted
@@ -1126,7 +1164,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#EEABAB\">" + testCOunt + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + testCOunt + "</b></td>");
                         }
 
 
@@ -1142,7 +1180,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#7B74F3\">" + condition_5_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_5_UserStoryCount + "</b></td>");
                         }
                        
 
@@ -1158,7 +1196,7 @@ namespace TFRestApiApp
                             builder.Append("<td class=\"text-td\">" + condition_6_UserStoryCount + "</td>");
                         } else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#8EE07D\">" + condition_6_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_6_UserStoryCount + "</b></td>");
                         }
 
                         //Condition-7: Ready for Assessment Service Onboarding [Table: dt_ReadyForAssessmentServiceOnboarding]
@@ -1174,7 +1212,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#7B74F3\">" + condition_7_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_7_UserStoryCount + "</b></td>");
                         }
 
                         //Condition-8: Assessment Service Onboarding In Progress [Table: dt_AssessmentServiceOnboardingInProgress]
@@ -1190,7 +1228,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#756BCA\">" + condition_8_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_8_UserStoryCount + "</b></td>");
                         }
 
                         //Condition-9: Scheduled for Grade Review Assessment [Table: dt_ScheduledForGradeReviewAssessment]
@@ -1206,7 +1244,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#7B74F3\">" + condition_9_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_9_UserStoryCount + "</b></td>");
                         }
 
                         //Condition-10: Grade Review Assessment in Progress [Table:dt_GradeReviewAssessmentInProgress]
@@ -1222,24 +1260,60 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#756BCA\">" + condition_10_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_10_UserStoryCount + "</b></td>");
                         }
 
-                        //Condition-11: Grade Review Assessment Completed [Table: dt_GradeReviewAssessmentCompleted]
+                        //Condition-12: Grade Review Assessment Completed [Table: dt_GradeReviewAssessmentCompleted]
                         var condition11Data = (from rSubCond11 in dt_GradeReviewAssessmentCompleted.AsEnumerable()
                                                where rSubCond11.Field<string>("SubGroup") == sugroupStrFmt
                                                && (rSubCond11.Field<string>("ServiceLine") == serviceOfferingName)
                                                select rSubCond11.Field<string>("WorkItemID"));
                         condition_11_UserStoryCount = condition11Data.Distinct().Count();
-                        
-                        if(condition_11_UserStoryCount==0)
+
+                        if (condition_11_UserStoryCount == 0)
                         {
                             builder.Append("<td class=\"text-td\">" + condition_11_UserStoryCount + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#8EE07D\">" + condition_11_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_11_UserStoryCount + "</b></td>");
                         }
+
+                        /*Condition-14: If Task ([Eng][Activity: Bug Remediation and Verification post Grade Review]) is in 
+                        New state - User Story count aggregated to show the numbers in “Bug Remediation Post CSEO Assessment 
+                        Not Started" */
+                        var condition14Data = (from rSubCond14 in dt_BugRemediationPostCSEOAssessmentNotStarted.AsEnumerable()
+                                               where rSubCond14.Field<string>("SubGroup") == sugroupStrFmt
+                                               && (rSubCond14.Field<string>("ServiceLine") == serviceOfferingName)
+                                               select rSubCond14.Field<string>("WorkItemID"));
+                        condition_14_BugRemediationPostCSEOAssessmentNotStarted = condition14Data.Distinct().Count();
+
+                        if (condition_14_BugRemediationPostCSEOAssessmentNotStarted == 0)
+                        {
+                            builder.Append("<td class=\"text-td\">" + condition_14_BugRemediationPostCSEOAssessmentNotStarted + "</td>");
+                        }
+                        else
+                        {
+                            builder.Append("<td class=\"text-td\"><b>" + condition_14_BugRemediationPostCSEOAssessmentNotStarted + "</b></td>");
+                        }
+
+
+                        //14.	If Task ([Eng][Activity: Bug Remediation and Verification post Grade Review]) is in Closed state - User Story count aggregated to show the numbers in " CSEO Assessment Grade C Received"
+                        var condition15Data = (from rSubCond14 in dt_BugRemediationPostCSEOAssessmentInProgress.AsEnumerable()
+                                               where rSubCond14.Field<string>("SubGroup") == sugroupStrFmt
+                                               && (rSubCond14.Field<string>("ServiceLine") == serviceOfferingName)
+                                               select rSubCond14.Field<string>("WorkItemID"));
+                        condition_15_BugRemediationPostCSEOAssessmentInProgress = condition15Data.Distinct().Count();
+
+                        if (condition_15_BugRemediationPostCSEOAssessmentInProgress == 0)
+                        {
+                            builder.Append("<td class=\"text-td\">" + condition_15_BugRemediationPostCSEOAssessmentInProgress + "</td>");
+                        }
+                        else
+                        {
+                            builder.Append("<td class=\"text-td\"><b>" + condition_15_BugRemediationPostCSEOAssessmentInProgress + "</b></td>");
+                        }
+
 
                         //Condition-12: P3 Applications Grade C Applications Count [Table: dt_FY20GradeC]
                         var condition12Data = (from rSubCond12 in dt_FY20GradeC.AsEnumerable()
@@ -1254,7 +1328,7 @@ namespace TFRestApiApp
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\" bgcolor=\"#8EE07D\">" + condition_12_UserStoryCount + "</td>");
+                            builder.Append("<td class=\"text-td\"><b>" + condition_12_UserStoryCount + "</b></td>");
                         }
 
                         //Condition-13: P3 Applications User Story Count [Table: dt_FY20UserStoryCount]
@@ -1284,23 +1358,39 @@ namespace TFRestApiApp
                 }
             }
 
-            builder.Append("<tr class=\"percentage\">");
+            builder.Append("<tr class=\"percentage\" bgcolor=\"#D5C024\">");
             builder.Append("<th colspan=\"2\" scope=\"colgroup\">Total / Percentage</th>");
-            builder.Append("<th>" + dt_SelfAssessmentToStart.Rows.Count + " / "+ (int)Math.Round((double)(100 * dt_SelfAssessmentToStart.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_SelfAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_SelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentStarted.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_ReadyForAssessmentServiceOnboarding.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ReadyForAssessmentServiceOnboarding.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_AssessmentServiceOnboardingInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_AssessmentServiceOnboardingInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_ScheduledForGradeReviewAssessment.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ScheduledForGradeReviewAssessment.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_GradeReviewAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_GradeReviewAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
-            builder.Append("<th>" + dt_FY20GradeC.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_FY20GradeC.Rows.Count) / allP3UserStories.Rows.Count) + "</th>");
+            builder.Append("<th>" + dt_SelfAssessmentToStart.Rows.Count + " / "+ (int)Math.Round((double)(100 * dt_SelfAssessmentToStart.Rows.Count) / allP3UserStories.Rows.Count) +"%"+"</th>");
+            builder.Append("<th>" + dt_SelfAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_SelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_ReadyForAssessmentServiceOnboarding.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ReadyForAssessmentServiceOnboarding.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_AssessmentServiceOnboardingInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_AssessmentServiceOnboardingInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_ScheduledForGradeReviewAssessment.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ScheduledForGradeReviewAssessment.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_GradeReviewAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_GradeReviewAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_FY20GradeC.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_FY20GradeC.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + allP3UserStories.Rows.Count + "</th>");
             builder.Append("</tr>");
             builder.Append("</table>");
+            builder.Append("<br/>" +
+                "<ol lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>New</b> state – User Story count aggregated to show the numbers in &quot;<b>Self-Assessment Ready To Start</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b>Self-Assessment In Progress</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b>Self-Assessment Completed</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post Self-Assessment Not Started</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b>Bug Remediation Post Self-Assessment In Progress</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b>Bug Remediation Post Self-Assessment Completed</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Create Grade Review Onboarding Request]</i></b><i>)<b> </b></i>is <b>Closed</b> &amp; If Task (<b><i>[Activity:Onboarding]</i></b><i>)</i> is in <b>New</b> State - User Story count aggregated to show the numbers in “<b>CSEO</b> <b>Assessment Onboarding Ready to Start</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Create Grade Review Onboarding Request]</i></b>) is <b>Closed</b> &nbsp;&amp; If Task (<b><i>[Activity:Onboarding]</i></b><i>)</i> is in <b>Active</b> State - User Story count aggregated to show the numbers &nbsp;in &quot;<b> CSEO</b> <b>Assessment Onboarding In Progress</b> &quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Activity:Onboarding]) </i></b>is in <b>Closed</b> state and &nbsp;If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>New</b> State - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Onboarding Completed</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Grade Review In Progress</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Grade Review Completed</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"> If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post CSEO Assessment Not Started</b> </span></li><li> <span>If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b> Bug Remediation Post CSEO Assessment In Progress</b>&quot;</span></li><li> <span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b> CSEO Assessment Grade C Received</b>&quot;</span></li></ol>");
             builder.Append("</body>");
             builder.Append("</html>");
             string HtmlFile = builder.ToString();
@@ -1312,13 +1402,14 @@ namespace TFRestApiApp
 
             //QA Draft
             oMsg.To = ConfigurationManager.AppSettings["Prod_To_Draft_P3ApplicationSend"];
+            
 
             //Prod
             //oMsg.To = ConfigurationManager.AppSettings["Prod_To_P3ApplicationSend"];
             //oMsg.CC = ConfigurationManager.AppSettings["Prod_CC_P3ApplicationSend"];
 
             DateTime startAtMonday = DateTime.Now.AddDays(DayOfWeek.Monday - DateTime.Now.DayOfWeek);
-            oMsg.Subject = "Draft: CSEO Assessment Services : CSEO FY20 P3 Accessibility Progress Scorecard - " + DateTime.Now.ToString("MM/dd/yyyy");
+            oMsg.Subject = "CSEO Assessment Service: CSEO FY20 P3 Accessibility Progress Scorecard - " + DateTime.Now.ToString("MM/dd/yyyy");
             oMsg.HTMLBody = HtmlFile;
             Console.WriteLine("ADO Features are created and sent mail to respective folks");
             oMsg.Send();
