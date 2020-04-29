@@ -40,21 +40,22 @@ namespace TFRestApiApp
         public static DataTable dt_AllRecordsInAirt = new DataTable();
         static readonly string TN_RecordsInAIRT = "AllRecords";
 
-        public static DataTable dt_SelfAssessmentToStart = new DataTable();
-        public static DataTable dt_SelfAssessmentInProgress = new DataTable();
-        public static DataTable dt_SelfAssessmentCompleted = new DataTable();
-        public static DataTable dt_BugRemediationPostSelfAssessmentNotStarted = new DataTable();
-        public static DataTable dt_BugRemediationPostSelfAssessmentStarted = new DataTable();
-        public static DataTable dt_BugRemediationPostSelfAssessmentCompleted = new DataTable();
-        public static DataTable dt_ReadyForAssessmentServiceOnboarding = new DataTable();
-        public static DataTable dt_AssessmentServiceOnboardingInProgress = new DataTable();
-        public static DataTable dt_ScheduledForGradeReviewAssessment = new DataTable();
-        public static DataTable dt_GradeReviewAssessmentInProgress = new DataTable();
-        public static DataTable dt_GradeReviewAssessmentCompleted = new DataTable();
-        public static DataTable dt_FY20GradeC = new DataTable();
-        public static DataTable dt_FY20UserStoryCount = new DataTable();
-        public static DataTable dt_BugRemediationPostCSEOAssessmentNotStarted = new DataTable();
-        public static DataTable dt_BugRemediationPostCSEOAssessmentInProgress = new DataTable();
+        public static DataTable dt_SelfAssessmentToStart = new DataTable(); //Condition-1: Self-Assessment Not Started
+        public static DataTable dt_SelfAssessmentInProgress = new DataTable(); //Condition-2: Self-Assessment In Progress
+        public static DataTable dt_SelfAssessmentCompleted = new DataTable(); //Condition-3: Self-Assessment Completed
+        public static DataTable dt_BugRemediationPostSelfAssessmentNotStarted = new DataTable(); //Condition-4: Bug Remediation Post Self-Assessment Not Started
+        public static DataTable dt_BugRemediationPostSelfAssessmentStarted = new DataTable(); //Condition-5: Bug Remediation Post Self-Assessment In Progress
+        public static DataTable dt_BugRemediationPostSelfAssessmentCompleted = new DataTable(); //Condition-6: Bug Remediation Post Self-Assessment Completed
+        public static DataTable dt_ReadyForAssessmentServiceOnboarding = new DataTable(); //Condition-8: CSEO Assessment Onboarding Not Started
+        public static DataTable dt_AssessmentServiceOnboardingInProgress = new DataTable(); //Condition-9: CSEO Assessment Onboarding In Progress 
+        public static DataTable dt_ScheduledForGradeReviewAssessment = new DataTable(); //Condition-10: CSEO Assessment Onboarding Completed
+        public static DataTable dt_GradeReviewAssessmentInProgress = new DataTable(); //Condition-11: CSEO Assessment Grade Review In Progress
+        public static DataTable dt_GradeReviewAssessmentCompleted = new DataTable(); //Condition-12: CSEO Assessment Grade Review Completed
+        public static DataTable dt_FY20GradeC = new DataTable(); //Condition-15: CSEO Assessment Grade C Received
+        public static DataTable dt_FY20UserStoryCount = new DataTable(); //Last Count: P3 Applications User Story Count
+        public static DataTable dt_BugRemediationPostCSEOAssessmentNotStarted = new DataTable(); //Condition-13: Bug Remediation Post CSEO Assessment Not Started 
+        public static DataTable dt_BugRemediationPostCSEOAssessmentInProgress = new DataTable(); //Condition-14: Bug Remediation Post CSEO Assessment In Progress
+        public static DataTable dt_awaitingOnboardingDocumentPostSelfAssessment = new DataTable(); //Condition-7: Awaiting Onboarding Document Post Self-Assessment
 
         static void Main(string[] args)
         {
@@ -143,6 +144,11 @@ namespace TFRestApiApp
             dt_FY20UserStoryCount.Columns.Add("SubGroup", typeof(string));
             dt_FY20UserStoryCount.Columns.Add("ServiceLine", typeof(string));
 
+            //dt_awaitingOnboardingDocumentPostSelfAssessment
+            dt_awaitingOnboardingDocumentPostSelfAssessment.Columns.Add("WorkItemID", typeof(string));
+            dt_awaitingOnboardingDocumentPostSelfAssessment.Columns.Add("SubGroup", typeof(string));
+            dt_awaitingOnboardingDocumentPostSelfAssessment.Columns.Add("ServiceLine", typeof(string));
+
             /*_______________________________End__________________________________*/
 
 
@@ -151,28 +157,28 @@ namespace TFRestApiApp
             //Get user stories for P3 applications
 
             string queryWiqlList = @"select [System.Id], [System.WorkItemType], [System.Title], [System.AssignedTo], [System.State], [System.Tags] from WorkItemLinks where (Source.[System.TeamProject] = @project and Source.[System.WorkItemType] = 'Scenario' and Source.[System.Id] = 5324882) and ([System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward') and (Target.[System.TeamProject] = @project and Target.[System.WorkItemType] in ('Feature', 'User Story') and Target.[System.State] <> 'Removed') order by [System.Title] mode (Recursive)";
-//            string queryWiqlList = @"SELECT
-//    [System.Id],
-//    [System.WorkItemType],
-//    [System.Title],
-//    [System.AssignedTo],
-//    [System.State],
-//    [System.Tags]
-//FROM workitemLinks
-//WHERE
-//    (
-//        [Source].[System.TeamProject] = @project
-//        AND [Source].[System.WorkItemType] = 'Scenario'
-//        AND [Source].[System.Id] = 5324882
-//    )
-//    AND (
-//        [System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward'
-//    )
-//    AND (
-//        [Target].[System.TeamProject] = @project
-//        AND [Target].[System.Id] IN (5576002)
-//    )
-//MODE (Recursive)";
+            //string queryWiqlList = @"SELECT
+            //    [System.Id],
+            //    [System.WorkItemType],
+            //    [System.Title],
+            //    [System.AssignedTo],
+            //    [System.State],
+            //    [System.Tags]
+            //FROM workitemLinks
+            //WHERE
+            //    (
+            //        [Source].[System.TeamProject] = @project
+            //        AND [Source].[System.WorkItemType] = 'Scenario'
+            //        AND [Source].[System.Id] = 5324882
+            //    )
+            //    AND (
+            //        [System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Forward'
+            //    )
+            //    AND (
+            //        [Target].[System.TeamProject] = @project
+            //        AND [Target].[System.Id] IN (5549042)
+            //    )
+            //MODE (Recursive)";
 
             string teamProject = "OneITVSO";
 
@@ -185,7 +191,8 @@ namespace TFRestApiApp
             /*If an application is P3, has Fy 20 Tag, based on Subgroup and Service Offering and 
              * if the applications Current Grade is C*/
             var condition12GradeC = (from r in allP3UserStories.AsEnumerable()
-                                     where r.Field<string>("Grade") == "C"
+                                     where r.Field<string>("Grade") == "C" &&
+                                     r.Field<string>("isDeletedRecordInAIRT") =="False"
                                      select new
                                      {
                                          cdT10_workitemID = r.Field<string>("WorkItemID"),
@@ -221,7 +228,8 @@ namespace TFRestApiApp
                     Console.WriteLine("____________________________________________________");
                     Console.WriteLine("                   USER STORY LINKS");
                     Console.WriteLine("____________________________________________________");
-
+                    string Condition3 = "FALSE";
+                    string Condition11 = "FALSE";
                     foreach (var wiLink in wi.Relations)
                     {
 
@@ -265,8 +273,8 @@ namespace TFRestApiApp
                                     var stateTask = CheckFieldAndGetFieldValue(wi_taskWorkFields, "System.State");
                                     string taskFieldValue_TaskState = stateTask.ToString();
 
-                                    //SelfAssessmentToStart: If Task (Self Assessment and Bug Logging) is in New
-                                    if (taskTitle.Contains("assessment and bugs logging") && taskFieldValue_TaskState.ToString() == "New")
+                                    //Condition-1:[Eng][Activity: Self-assessment and Bugs Logging --> New
+                                    if (taskTitle.Contains("self-assessment and bugs logging") && taskFieldValue_TaskState.ToString() == "New")
                                     {
                                         string cndt1_userStoryID = wiID.ToString();
                                         string cndt1_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt1_userStoryID)["ServiceOffering"].ToString());
@@ -278,8 +286,8 @@ namespace TFRestApiApp
                                         //Console.WriteLine("{0}:{1} Identified Condition-1:SelfAssessmentToStart..!", taskFieldValue_TaskWorkItemType.ToString(), taskID);
                                     }
 
-                                    //SelfAssessmentInProgress
-                                    if (taskTitle.Contains("assessment and bugs logging") && taskFieldValue_TaskState.ToString() == "Active")
+                                    //Condition-2:[Eng][Activity: Self-assessment and Bugs Logging --> Active
+                                    if (taskTitle.Contains("self-assessment and bugs logging") && taskFieldValue_TaskState.ToString() == "Active")
                                     {
                                         string cndt2_userStoryID = wiID.ToString();
                                         string cndt2_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt2_userStoryID)["ServiceOffering"].ToString());
@@ -289,8 +297,9 @@ namespace TFRestApiApp
 
                                         Console.WriteLine("Condition_2 SelfAssessmentInProgress identified.....!");
                                     }
-                                    //SelfAssessmentCompleted
-                                    if (taskTitle.Contains("assessment and bugs logging") && taskFieldValue_TaskState.ToString() == "Closed")
+
+                                    //Condition-3:[Eng][Activity: Self-assessment and Bugs Logging -->Closed
+                                    if (taskTitle.Contains("self-assessment and bugs logging") && taskFieldValue_TaskState.ToString() == "Closed")
                                     {
                                         string cndt3_userStoryID = wiID.ToString();
                                         string cndt3_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt3_userStoryID)["ServiceOffering"].ToString());
@@ -299,19 +308,86 @@ namespace TFRestApiApp
                                         dt_SelfAssessmentCompleted.Rows.Add(cndt3_userStoryID, cndt3_SubGroup, cndt3_ServiceOffering);
 
                                         Console.WriteLine("Condition_3 SelfAssessmentCompleted identified.....!");
+                                        Condition3 = "TRUE";
                                     }
-                                    //Bug Remediation Post Self Assessment Not Started
+
+                                    //[Eng][Activity: Self-assessment and Bugs Logging -->Closed && Bug Remediation Post Self Assessment Not Started --> New
+                                    //if (taskTitle.Contains("bugs remediation post self-assessment") && taskFieldValue_TaskState.ToString() == "New")
+                                    //{
+                                    //    string cndt4_userStoryID = wiID.ToString();
+                                    //    string cndt4_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt4_userStoryID)["ServiceOffering"].ToString());
+                                    //    string cndt4_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt4_userStoryID)["Subgroup"].ToString());
+
+                                    //    dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Add(cndt4_userStoryID, cndt4_SubGroup, cndt4_ServiceOffering);
+
+                                    //    Console.WriteLine("Condition_4 Bug Remediation Post Self Assessment Not Started identified.....!");
+                                    //}
+
+                                    //Condition-4: ([Eng][Activity: Bugs Remediation post Self-assessment] --> New && ([Eng][Activity: Self-assessment and Bugs Logging) --> Close
                                     if (taskTitle.Contains("bugs remediation post self-assessment") && taskFieldValue_TaskState.ToString() == "New")
                                     {
-                                        string cndt4_userStoryID = wiID.ToString();
-                                        string cndt4_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt4_userStoryID)["ServiceOffering"].ToString());
-                                        string cndt4_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt4_userStoryID)["Subgroup"].ToString());
+                                        int parentIdForThisTask = wiID;
+                                        var cndt4_userStoryID = GetWorkItemWithRelations(parentIdForThisTask);
+                                        if (cndt4_userStoryID.Relations != null)
+                                        {
+                                            Console.WriteLine("Verifying subcondition for 4th Parent Conditon...!");
+                                            foreach (var wiLink_Condition4 in cndt4_userStoryID.Relations)
+                                            {
+                                                string childTaskURL_Condition4 = wiLink_Condition4.Url;
+                                                //Remove the Task Before string
+                                                string childTaskID_Condition4 = childTaskURL_Condition4.Replace("https://microsoftit.visualstudio.com/_apis/wit/workItems/", "");
+                                                var regexItem_Condition4 = new Regex("^[0-9 ]*$");
+                                                if (regexItem_Condition4.IsMatch(childTaskID_Condition4))
+                                                {
+                                                    //TaskID
+                                                    int wid_childTaskIDCondition4 = int.Parse(childTaskID_Condition4);
+                                                    //Add the Task Childs 
+                                                    Dictionary<string, string> parentList_Condition4 = new Dictionary<string, string>();
+                                                    foreach (var newparent_Condition4 in wiLink_Condition4.Attributes)
+                                                    {
+                                                        parentList_Condition4.Add(newparent_Condition4.Key, newparent_Condition4.Value.ToString());
+                                                    }
+                                                    if (parentList_Condition4.ContainsValue("Child"))
+                                                    {
+                                                        //Get the Task Fields
+                                                        var wi_taskWorkFields_Condition4 = GetWorkItem(wid_childTaskIDCondition4);
+                                                        if (wi_taskWorkFields_Condition4.Fields["System.WorkItemType"].ToString() == "Task" && wi_taskWorkFields_Condition4.Fields["System.State"].ToString() == "Closed")
+                                                        {
+                                                            var taskTitleVar_Condition4 = CheckFieldAndGetFieldValue(wi_taskWorkFields_Condition4, "System.Title");
+                                                            string taskTitle_Condition4 = taskTitleVar_Condition4.ToString().ToLower();
+                                                            if (taskTitle_Condition4.Contains("self-assessment and bugs logging"))
+                                                            {
+                                                                string cndt4New_userStoryID = wiID.ToString();
+                                                                string cndt4New_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt4New_userStoryID)["ServiceOffering"].ToString());
+                                                                string cndt4New_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt4New_userStoryID)["Subgroup"].ToString());
+                                                                dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Add(cndt4New_userStoryID, cndt4New_SubGroup, cndt4New_ServiceOffering);
+                                                            }
+                                                            else
+                                                            {
+                                                                Console.WriteLine("Sub scenario not satistied In Conditon 4..!");
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.WriteLine("WorkItemType not in New state for  Conditon 4 in sub scenario");
+                                                        }
 
-                                        dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Add(cndt4_userStoryID, cndt4_SubGroup, cndt4_ServiceOffering);
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("This not Child task workItem in subcondition-4..!");
+                                                    }
 
-                                        Console.WriteLine("Condition_4 Bug Remediation Post Self Assessment Not Started identified.....!");
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Currently Identified Not child workItem verifying next one...!");
+                                                }
+                                            }
+                                        }
                                     }
-                                    //Bug Remediation Post Self Assessment Started
+
+                                    //Condition-5: Bug Remediation Post Self Assessment Started --> Active
                                     if (taskTitle.Contains("bugs remediation post self-assessment") && taskFieldValue_TaskState.ToString() == "Active")
                                     {
                                         string cndt5_userStoryID = wiID.ToString();
@@ -322,7 +398,8 @@ namespace TFRestApiApp
 
                                         Console.WriteLine("Condition 5 identified...!");
                                     }
-                                    //Bug Remediation Post Self Assessment Completed
+
+                                    //Condition-6: [Eng][Activity: Bugs Remediation post Self-assessment --> Closed
                                     if (taskTitle.Contains("bugs remediation post self-assessment") && taskFieldValue_TaskState.ToString() == "Closed")
                                     {
                                         string cndt6_userStoryID = wiID.ToString();
@@ -333,8 +410,73 @@ namespace TFRestApiApp
 
                                         Console.WriteLine("Condition 6 identified...!");
                                     }
-                                    //Ready for Assessment Service Onboarding
-                                    //[Eng][Activity: Create Grade Review Onboarding Request] --> Should be Closed
+
+                                    //Condition-7: Activity: Bugs Remediation post Self-assessment --> Closed (&&) Activity: Create Grade Review Onboarding Request is New or Active
+                                    if (taskTitle.Contains("activity: bugs remediation post self-assessment") && taskFieldValue_TaskState.ToString() == "Closed")
+                                    {
+                                        int parentIdForThisTask = wiID;
+                                        var wi_Condition7_New = GetWorkItemWithRelations(parentIdForThisTask);
+                                        if (wi_Condition7_New.Relations != null)
+                                        {
+                                            Console.WriteLine("Conditon:7 activity: bugs remediation post self-assessment--> Close");
+                                            foreach (var wiLink_Condition7_New in wi_Condition7_New.Relations)
+                                            {
+                                                string childTaskURL_Condition7_New = wiLink_Condition7_New.Url;
+                                                //Remove the Task Before string
+                                                string childTaskID_Condition7_New = childTaskURL_Condition7_New.Replace("https://microsoftit.visualstudio.com/_apis/wit/workItems/", "");
+                                                var regexItem_Condition7_New = new Regex("^[0-9 ]*$");
+                                                if (regexItem_Condition7_New.IsMatch(childTaskID_Condition7_New))
+                                                {
+                                                    //TaskID
+                                                    int wid_childTaskIDCondition7_New = int.Parse(childTaskID_Condition7_New);
+                                                    //Add the Task Childs 
+                                                    Dictionary<string, string> parentList_Condition7_New = new Dictionary<string, string>();
+                                                    foreach (var newparent_Condition7_New in wiLink_Condition7_New.Attributes)
+                                                    {
+                                                        parentList_Condition7_New.Add(newparent_Condition7_New.Key, newparent_Condition7_New.Value.ToString());
+                                                    }
+                                                    if (parentList_Condition7_New.ContainsValue("Child"))
+                                                    {
+                                                        //Get the Task Fields
+                                                        var wi_taskWorkFields_Condition7_New = GetWorkItem(wid_childTaskIDCondition7_New);
+                                                        if (wi_taskWorkFields_Condition7_New.Fields["System.WorkItemType"].ToString() == "Task" && (wi_taskWorkFields_Condition7_New.Fields["System.State"].ToString() == "New" || wi_taskWorkFields_Condition7_New.Fields["System.State"].ToString() == "Active"))
+                                                        {
+                                                            var taskTitleVar_Condition7_New = CheckFieldAndGetFieldValue(wi_taskWorkFields_Condition7_New, "System.Title");
+                                                            string taskTitle_Condition7_New = taskTitleVar_Condition7_New.ToString().ToLower();
+                                                            //For Conditon 7 in Sub scenario title: [Activity:Onboarding]---> New
+                                                            if (taskTitle_Condition7_New.Contains("create grade review onboarding request"))
+                                                            {
+                                                                string cndt7_userStoryID_New = wiID.ToString();
+                                                                string cndt7_ServiceOffering_New = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt7_userStoryID_New)["ServiceOffering"].ToString());
+                                                                string cndt7_SubGroup_New = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt7_userStoryID_New)["Subgroup"].ToString());
+                                                                dt_awaitingOnboardingDocumentPostSelfAssessment.Rows.Add(cndt7_userStoryID_New, cndt7_SubGroup_New, cndt7_ServiceOffering_New);
+                                                            }
+                                                            else
+                                                            {
+                                                                Console.WriteLine("Conditon:7: Sub Conditon: Create Grade Review Onboarding Request: New or Active");
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.WriteLine("WorkItemType not in New state for  Conditon 7 in sub scenario");
+                                                        }
+
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("This not Child task workItem in subcondition-7..!");
+                                                    }
+
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Currently Identified Not child workItem verifying next one...!");
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    //Condition-8: Create Grade Review Onboarding Request --> Closed && Activity:Onboarding --> New
                                     if (taskTitle.Contains("create grade review onboarding request") && taskFieldValue_TaskState.ToString() == "Closed")
                                     {
                                         /*Get the parent id and restof taks here 
@@ -350,7 +492,7 @@ namespace TFRestApiApp
                                                 //Remove the Task Before string
                                                 string childTaskID_Condition7 = childTaskURL_Condition7.Replace("https://microsoftit.visualstudio.com/_apis/wit/workItems/", "");
                                                 var regexItem_Condition7 = new Regex("^[0-9 ]*$");
-                                                if (regexItem.IsMatch(childTaskID_Condition7))
+                                                if (regexItem_Condition7.IsMatch(childTaskID_Condition7))
                                                 {
                                                     //TaskID
                                                     int wid_childTaskIDCondition7 = int.Parse(childTaskID_Condition7);
@@ -401,152 +543,43 @@ namespace TFRestApiApp
                                         }
                                     }
 
-                                    //Conditon:8 - Assessment Service Onboarding In Progress
-                                    /*If Task (Eng Onboarding) is in Closed state & If Task (Assessment Service Onboarding is in Active State) */
-                                    if(taskTitle.Contains("create grade review onboarding request") && taskFieldValue_TaskState.ToString() == "Closed")
+                                    //Condition-9: Activity:Onboarding]) is in Active State 
+                                    if (taskTitle.Contains("activity:onboarding") && taskFieldValue_TaskState.ToString() == "Active")
                                     {
-                                        int parentIdForThisTask = wiID;
-                                        var wi_Condition8 = GetWorkItemWithRelations(parentIdForThisTask);
-                                        if (wi_Condition8.Relations != null)
-                                        {
-                                            Console.WriteLine("Verifying subcondition If Task (Assessment Service Onboarding is in NewState) in Conditon 8");
-                                            foreach (var wiLink_Condition8 in wi_Condition8.Relations)
-                                            {
-                                                string childTaskURL_Condition8 = wiLink_Condition8.Url;
-                                                //Remove the Task Before string
-                                                string childTaskID_Condition8 = childTaskURL_Condition8.Replace("https://microsoftit.visualstudio.com/_apis/wit/workItems/", "");
-                                                var regexItem_Condition8 = new Regex("^[0-9 ]*$");
-                                                if (regexItem.IsMatch(childTaskID_Condition8))
-                                                {
-                                                    //TaskID
-                                                    int wid_childTaskIDCondition8 = int.Parse(childTaskID_Condition8);
-                                                    //Add the Task Childs 
-                                                    Dictionary<string, string> parentList_Condition8 = new Dictionary<string, string>();
-                                                    foreach (var newparent_Condition8 in wiLink_Condition8.Attributes)
-                                                    {
-                                                        parentList_Condition8.Add(newparent_Condition8.Key, newparent_Condition8.Value.ToString());
-                                                    }
-                                                    if (parentList_Condition8.ContainsValue("Child"))
-                                                    {
-                                                        //Get the Task Fields
-                                                        var wi_taskWorkFields_Condition8 = GetWorkItem(wid_childTaskIDCondition8);
-                                                        if (wi_taskWorkFields_Condition8.Fields["System.WorkItemType"].ToString() == "Task" && wi_taskWorkFields_Condition8.Fields["System.State"].ToString() == "Active")
-                                                        {
-                                                            var taskTitleVar_Condition8 = CheckFieldAndGetFieldValue(wi_taskWorkFields_Condition8, "System.Title");
-                                                            string taskTitle_Condition8 = taskTitleVar_Condition8.ToString().ToLower();
-                                                            //For Conditon 8 in Sub scenario title: [Activity:Onboarding]---> Active
-                                                            if (taskTitle_Condition8.Contains("activity:onboarding"))
-                                                            {
-                                                                string cndt8_userStoryID = wiID.ToString();
-                                                                string cndt8_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt8_userStoryID)["ServiceOffering"].ToString());
-                                                                string cndt8_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt8_userStoryID)["Subgroup"].ToString());
-                                                                dt_AssessmentServiceOnboardingInProgress.Rows.Add(cndt8_userStoryID, cndt8_SubGroup,cndt8_ServiceOffering);
-                                                            }
-                                                            else
-                                                            {
-                                                                Console.WriteLine("Sub scenario not satistied In Conditon 8, that means Title:[Activity:Onboarding] --> Not in Active state..!");
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            Console.WriteLine("WorkItemType not in New state for  Conditon 8 in sub scenario");
-                                                        }
+                                        string cndt09_userStoryID = wiID.ToString();
+                                        string cndt09_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt09_userStoryID)["ServiceOffering"].ToString());
+                                        string cndt09_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt09_userStoryID)["Subgroup"].ToString());
 
-                                                    }
-                                                    else
-                                                    {
-                                                        Console.WriteLine("This not Child task workItem in subcondition-8..!");
-                                                    }
+                                        dt_AssessmentServiceOnboardingInProgress.Rows.Add(cndt09_userStoryID, cndt09_SubGroup, cndt09_ServiceOffering);
 
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("Currently Identified Not child workItem verifying next one...!");
-                                                }
-                                            }
-                                        }
-
+                                        Console.WriteLine("Condition 10 identified...!");
                                     }
 
-                                    //Condition 9: Scheduled for Grade Review Assessment
-                                    /*[Activity:Onboarding] --> Closed State */
-                                    if(taskTitle.Contains("[activity:onboarding]") && taskFieldValue_TaskState.ToString() == "Closed")
+                                    //Condition-10: Activity:Onboarding is in Closed
+                                    if (taskTitle.Contains("activity:onboarding") && taskFieldValue_TaskState.ToString() == "Closed")
                                     {
-                                        int parentIdForThisTask = wiID;
-                                        var wi_Condition9 = GetWorkItemWithRelations(parentIdForThisTask);
-                                        if (wi_Condition9.Relations != null)
-                                        {
-                                            Console.WriteLine("Verifying subcondition If Task (Assessment Service Onboarding is in NewState) in Conditon 9");
-                                            foreach (var wiLink_Condition9 in wi_Condition9.Relations)
-                                            {
-                                                string childTaskURL_Condition9 = wiLink_Condition9.Url;
-                                                //Remove the Task Before string
-                                                string childTaskID_Condition9 = childTaskURL_Condition9.Replace("https://microsoftit.visualstudio.com/_apis/wit/workItems/", "");
-                                                var regexItem_Condition9 = new Regex("^[0-9 ]*$");
-                                                if (regexItem_Condition9.IsMatch(childTaskID_Condition9))
-                                                {
-                                                    //TaskID
-                                                    int wid_childTaskIDCondition9 = int.Parse(childTaskID_Condition9);
-                                                    //Add the Task Childs 
-                                                    Dictionary<string, string> parentList_Condition9 = new Dictionary<string, string>();
-                                                    foreach (var newparent_Condition9 in wiLink_Condition9.Attributes)
-                                                    {
-                                                        parentList_Condition9.Add(newparent_Condition9.Key, newparent_Condition9.Value.ToString());
-                                                    }
-                                                    if (parentList_Condition9.ContainsValue("Child"))
-                                                    {
-                                                        //Get the Task Fields
-                                                        var wi_taskWorkFields_Condition9 = GetWorkItem(wid_childTaskIDCondition9);
-                                                        if (wi_taskWorkFields_Condition9.Fields["System.WorkItemType"].ToString() == "Task" && wi_taskWorkFields_Condition9.Fields["System.State"].ToString() == "New")
-                                                        {
-                                                            var taskTitleVar_Condition9 = CheckFieldAndGetFieldValue(wi_taskWorkFields_Condition9, "System.Title");
-                                                            string taskTitle_Condition9 = taskTitleVar_Condition9.ToString().ToLower();
-                                                            //For Conditon 9 in Sub scenario title: [Activity:Assessment]---> New
-                                                            if (taskTitle_Condition9.Contains("[activity:assessment]"))
-                                                            {
-                                                                string cndt9_userStoryID = wiID.ToString();
-                                                                string cndt9_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt9_userStoryID)["ServiceOffering"].ToString());
-                                                                string cndt9_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt9_userStoryID)["Subgroup"].ToString());
-                                                                dt_ScheduledForGradeReviewAssessment.Rows.Add(cndt9_userStoryID, cndt9_SubGroup, cndt9_ServiceOffering);
-                                                            }
-                                                            else
-                                                            {
-                                                                Console.WriteLine("Sub scenario not satistied In Conditon 9, that means Title:[Activity:Assessment] --> Not in New state..!");
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            Console.WriteLine("WorkItemType not in New state for  Conditon 9 in sub scenario");
-                                                        }
+                                        string cndt10_userStoryID = wiID.ToString();
+                                        string cndt10_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt10_userStoryID)["ServiceOffering"].ToString());
+                                        string cndt10_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt10_userStoryID)["Subgroup"].ToString());
 
-                                                    }
-                                                    else
-                                                    {
-                                                        Console.WriteLine("This not Child task workItem in subcondition-9..!");
-                                                    }
+                                        dt_ScheduledForGradeReviewAssessment.Rows.Add(cndt10_userStoryID, cndt10_SubGroup, cndt10_ServiceOffering);
 
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("Currently Identified Not child workItem verifying next one...!");
-                                                }
-                                            }
-                                        }
-
+                                        Console.WriteLine("Condition 10 identified...!");
                                     }
 
-                                    //Grade Review Assessment in Progress
+                                    //Condition-11: Activity:Assessment is in Active state
                                     if (taskTitle.Contains("activity:assessment") && taskFieldValue_TaskState.ToString() == "Active")
                                     {
                                         string cndt10_userStoryID = wiID.ToString();
                                         string cndt10_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt10_userStoryID)["ServiceOffering"].ToString());
                                         string cndt10_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt10_userStoryID)["Subgroup"].ToString());
 
-                                        dt_GradeReviewAssessmentInProgress.Rows.Add(cndt10_userStoryID, cndt10_SubGroup,cndt10_ServiceOffering);
+                                        dt_GradeReviewAssessmentInProgress.Rows.Add(cndt10_userStoryID, cndt10_SubGroup, cndt10_ServiceOffering);
 
                                         Console.WriteLine("Condition 10 identified...!");
                                     }
-                                    //Grade Review Assessment Completed
+
+                                    //Condition-12: Activity:Assessment is in Closed
                                     if (taskTitle.Contains("activity:assessment") && taskFieldValue_TaskState.ToString() == "Closed")
                                     {
                                         string cndt11_userStoryID = wiID.ToString();
@@ -556,20 +589,76 @@ namespace TFRestApiApp
                                         dt_GradeReviewAssessmentCompleted.Rows.Add(cndt11_userStoryID, cndt11_SubGroup, cndt11_ServiceOffering);
 
                                         Console.WriteLine("Condition11 identified...!");
+                                        Condition11 = "TRUE";
                                     }
 
-                                    if (taskTitle.Contains("activity: bug remediation and verification post grade review") && taskFieldValue_TaskState.ToString() == "New")
+                                    //Condition-13: Activity:Assessment--> Closed && Activity: Bug Remediation and Verification post Grade Review --> New
+                                    if (taskTitle.Contains("bug remediation and verification post grade review") && taskFieldValue_TaskState.ToString() == "New")
                                     {
-                                        string cndt14_userStoryID = wiID.ToString();
-                                        string cndt14_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt14_userStoryID)["ServiceOffering"].ToString());
-                                        string cndt14_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt14_userStoryID)["Subgroup"].ToString());
+                                        int parentIdForThisTask = wiID;
+                                        var wi_Condition13 = GetWorkItemWithRelations(parentIdForThisTask);
+                                        if (wi_Condition13.Relations != null)
+                                        {
+                                            Console.WriteLine("Verifying Conditon 13....!");
+                                            foreach (var wiLink_Condition13 in wi_Condition13.Relations)
+                                            {
+                                                string childTaskURL_Condition13 = wiLink_Condition13.Url;
+                                                //Remove the Task Before string
+                                                string childTaskID_Condition13 = childTaskURL_Condition13.Replace("https://microsoftit.visualstudio.com/_apis/wit/workItems/", "");
+                                                var regexItem_Condition13 = new Regex("^[0-9 ]*$");
+                                                if (regexItem_Condition13.IsMatch(childTaskID_Condition13))
+                                                {
+                                                    //TaskID
+                                                    int wid_childTaskIDCondition13 = int.Parse(childTaskID_Condition13);
+                                                    //Add the Task Childs 
+                                                    Dictionary<string, string> parentList_Condition13 = new Dictionary<string, string>();
+                                                    foreach (var newparent_Condition13 in wiLink_Condition13.Attributes)
+                                                    {
+                                                        parentList_Condition13.Add(newparent_Condition13.Key, newparent_Condition13.Value.ToString());
+                                                    }
+                                                    if (parentList_Condition13.ContainsValue("Child"))
+                                                    {
+                                                        //Get the Task Fields
+                                                        var wi_taskWorkFields_Condition13 = GetWorkItem(wid_childTaskIDCondition13);
+                                                        if (wi_taskWorkFields_Condition13.Fields["System.WorkItemType"].ToString() == "Task" && wi_taskWorkFields_Condition13.Fields["System.State"].ToString() == "Closed")
+                                                        {
+                                                            var taskTitleVar_Condition13 = CheckFieldAndGetFieldValue(wi_taskWorkFields_Condition13, "System.Title");
+                                                            string taskTitle_Condition13 = taskTitleVar_Condition13.ToString().ToLower();
+                                                            //For Conditon 7 in Sub scenario title: [Activity:Onboarding]---> New
+                                                            if (taskTitle_Condition13.Contains("activity:assessment"))
+                                                            {
+                                                                string cndt13New_userStoryID = wiID.ToString();
+                                                                string cndt13New_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt13New_userStoryID)["ServiceOffering"].ToString());
+                                                                string cndt13New_SubGroup = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt13New_userStoryID)["Subgroup"].ToString());
+                                                                dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Add(cndt13New_userStoryID, cndt13New_SubGroup, cndt13New_ServiceOffering);
+                                                            }
+                                                            else
+                                                            {
+                                                                Console.WriteLine("Sub scenario Condition 13...!");
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.WriteLine("WorkItemType not in New state for  Conditon 13 in sub scenario");
+                                                        }
 
-                                        dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Add(cndt14_userStoryID, cndt14_SubGroup, cndt14_ServiceOffering);
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("This not Child task workItem in subcondition-13..!");
+                                                    }
 
-                                        Console.WriteLine("Condition14 identified...!");
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Currently Identified Not child workItem verifying next one...!");
+                                                }
+                                            }
+                                        }
                                     }
 
-                                    if (taskTitle.Contains("activity: bug remediation and verification post grade review") && taskFieldValue_TaskState.ToString() == "Active")
+                                    //Condition-14: Activity: Bug Remediation and Verification post Grade Review --> Active
+                                    if (taskTitle.Contains("bug remediation and verification post grade review") && taskFieldValue_TaskState.ToString() == "Active")
                                     {
                                         string cndt15_userStoryID = wiID.ToString();
                                         string cndt15_ServiceOffering = (allP3UserStories.AsEnumerable().FirstOrDefault(p => p["WorkItemID"].ToString() == cndt15_userStoryID)["ServiceOffering"].ToString());
@@ -580,7 +669,6 @@ namespace TFRestApiApp
                                         Console.WriteLine("Condition14 identified...!");
                                     }
 
-                                    //}
                                 }
                             }
                         } 
@@ -589,22 +677,22 @@ namespace TFRestApiApp
             }
 
             List<DataTable> dataTableList = new List<DataTable>();
-            dataTableList.Add(dt_FY20GradeC);
-            dataTableList.Add(dt_BugRemediationPostCSEOAssessmentInProgress);
-            dataTableList.Add(dt_BugRemediationPostCSEOAssessmentNotStarted);
-            dataTableList.Add(dt_GradeReviewAssessmentCompleted);
-            dataTableList.Add(dt_GradeReviewAssessmentInProgress);
-            dataTableList.Add(dt_ScheduledForGradeReviewAssessment);
-            dataTableList.Add(dt_AssessmentServiceOnboardingInProgress);
-            dataTableList.Add(dt_ReadyForAssessmentServiceOnboarding);
-            dataTableList.Add(dt_BugRemediationPostSelfAssessmentCompleted);
-            dataTableList.Add(dt_BugRemediationPostSelfAssessmentStarted);
-            dataTableList.Add(dt_BugRemediationPostSelfAssessmentNotStarted);
-            dataTableList.Add(dt_SelfAssessmentCompleted);
-            dataTableList.Add(dt_SelfAssessmentInProgress);
             dataTableList.Add(dt_SelfAssessmentToStart);
+            dataTableList.Add(dt_SelfAssessmentInProgress);
+            dataTableList.Add(dt_SelfAssessmentCompleted);
+            dataTableList.Add(dt_BugRemediationPostSelfAssessmentNotStarted);
+            dataTableList.Add(dt_BugRemediationPostSelfAssessmentStarted);
+            dataTableList.Add(dt_BugRemediationPostSelfAssessmentCompleted);
+            dataTableList.Add(dt_awaitingOnboardingDocumentPostSelfAssessment);
+            dataTableList.Add(dt_ReadyForAssessmentServiceOnboarding);
+            dataTableList.Add(dt_AssessmentServiceOnboardingInProgress);
+            dataTableList.Add(dt_ScheduledForGradeReviewAssessment);
+            dataTableList.Add(dt_GradeReviewAssessmentInProgress);
+            dataTableList.Add(dt_GradeReviewAssessmentCompleted);
+            dataTableList.Add(dt_BugRemediationPostCSEOAssessmentNotStarted);
+            dataTableList.Add(dt_BugRemediationPostCSEOAssessmentInProgress);
             dataTableList.Add(allP3UserStories);
-
+            //dataTableList.Add(dt_FY20UserStoryCount);
             generateXlsDataSheet(dataTableList);
 
             Console.WriteLine("======================================================================");
@@ -836,7 +924,7 @@ namespace TFRestApiApp
             System.Data.DataTable dt = new System.Data.DataTable();
             SqlCommand cmd = new SqlCommand();
             string dbConn = null;
-            dbConn = @"Data Source = ";
+            dbConn = @"";
             cmd.CommandText = QueryName;
             SqlConnection sqlConnection1 = new SqlConnection(dbConn);
             cmd.Connection = sqlConnection1;
@@ -1035,27 +1123,30 @@ namespace TFRestApiApp
             builder.Append("</style>");
             builder.Append("</head>");
             builder.Append("<body>");
-            builder.Append("<table>");
+
+            //builder.Append("<span style=\"font-size:13.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\" id=\"pageH2\"><b>CSEO FY20 P3 Accessibility Progress Scorecard</b></span>");
+            builder.Append("<table aria-describedby=\"pageH2\">");
             builder.Append("<tr class=\"rowheader rh1\">");
-            builder.Append("<th colspan=\"17\" scope=\"colgroup\">CSEO FY20 P3 Accessibility Progress Scorecard</th>");
+            builder.Append("<th colspan=\"18\" scope=\"colgroup\">CSEO FY20 P3 Accessibility Progress Scorecard</th>");
             builder.Append("</tr>");
             builder.Append("<tr class=\"rowheader\">");
             builder.Append("<th><b>CSEO Organization</b></th>");
             builder.Append("<th><b>Service Group</b></th>");
-            builder.Append("<th><b>Self-Assessment Ready To Start</b></th>");
-            builder.Append("<th><b>Self-Assessment In Progress</b></th>");
-            builder.Append("<th><b>Self-Assessment Completed</b></th>");
-            builder.Append("<th><b>Bug Remediation Post Self-Assessment Not Started</b></th>");
-            builder.Append("<th><b>Bug Remediation Post Self-Assessment In Progress</b></th>");
-            builder.Append("<th><b>Bug Remediation Post Self-Assessment Completed</b></th>");
-            builder.Append("<th><b>CSEO Assessment Onboarding Ready to Start</b></th>");
-            builder.Append("<th><b>CSEO Assessment Onboarding In Progress</b></th>");
-            builder.Append("<th><b>CSEO Assessment Onboarding Completed</b></th>");
-            builder.Append("<th><b>CSEO Assessment Grade Review In Progress</b></th>");
-            builder.Append("<th><b>CSEO Assessment Grade Review Completed</b></th>");
-            builder.Append("<th><b>Bug Remediation Post CSEO Assessment Not Started</b></th>");
-            builder.Append("<th><b>Bug Remediation Post CSEO Assessment In Progress</b></th>");
-            builder.Append("<th><b>CSEO Assessment Grade C Received</b></th>");
+            builder.Append("<th><b>Self-Assessment Not Started</b><sup> [<a href=\"#c1\">1</a>]</sup></th>");
+            builder.Append("<th><b>Self-Assessment In Progress</b><sup> [<a href=\"#c2\">2</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#FFF2CC\"><b>Self-Assessment Completed</b><sup> [<a href=\"#c3\">3</a>]</sup></th>");
+            builder.Append("<th><b>Bug Remediation Post Self-Assessment Not Started</b><sup> [<a href=\"#c4\">4</a>]</sup></th>");
+            builder.Append("<th><b>Bug Remediation Post Self-Assessment In Progress</b><sup> [<a href=\"#c5\">5</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#ffe699\"><b>Bug Remediation Post Self-Assessment Completed</b><sup> [<a href=\"#c6\">6</a>]</sup></th>");
+            builder.Append("<th><b>Awaiting Onboarding Document Post Self-Assessment</b><sup> [<a href=\"#c7\">7</a>]</sup></th>");
+            builder.Append("<th><b>CSEO Assessment Onboarding Not Started</b><sup> [<a href=\"#c8\">8</a>]</sup></th>");
+            builder.Append("<th><b>CSEO Assessment Onboarding In Progress</b><sup> [<a href=\"#c9\">9</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#FFD966\"><b>CSEO Assessment Onboarding Completed</b><sup> [<a href=\"#c10\">10</a>]</sup></th>");
+            builder.Append("<th><b>CSEO Assessment Grade Review In Progress</b><sup> [<a href=\"#c11\">11</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#92D050\"><b>CSEO Assessment Grade Review Completed</b><sup> [<a href=\"#c12\">12</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#A8D08D\"><b>Bug Remediation Post CSEO Assessment Not Started</b><sup> [<a href=\"#c13\">13</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#A8D08D\"><b>Bug Remediation Post CSEO Assessment In Progress</b><sup> [<a href=\"#c14\">14</a>]</sup></th>");
+            builder.Append("<th bgcolor=\"#00B050\"><b>CSEO Assessment Grade C Received</b><sup> [<a href=\"#c15\">15</a>]</sup></th>");
             builder.Append("<th><b>P3 Applications User Story Count</b></th>");
             builder.Append("</tr>");
             
@@ -1079,6 +1170,7 @@ namespace TFRestApiApp
             int condition_13_UserStoryCount = 0;
             int condition_14_BugRemediationPostCSEOAssessmentNotStarted = 0;
             int condition_15_BugRemediationPostCSEOAssessmentInProgress = 0;
+            int condition_7New_UserStoryCount = 0;
 
             foreach (DataRow SubGroup in distinct_SubGroup.Rows)
             {
@@ -1142,11 +1234,11 @@ namespace TFRestApiApp
                         condition_3_UserStoryCount = condition3Data.Distinct().Count();
                         if(condition_3_UserStoryCount==0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_3_UserStoryCount + "</td>");
+                            builder.Append("<td bgcolor=\"#FFF2CC\" class=\"text-td\">" + condition_3_UserStoryCount + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_3_UserStoryCount + "</b></td>");
+                            builder.Append("<td bgcolor=\"#FFF2CC\" class=\"text-td\"><b>" + condition_3_UserStoryCount + "</b></td>");
                         }
 
                         //dt_BugRemediationPostSelfAssessmentNotStarted
@@ -1193,13 +1285,28 @@ namespace TFRestApiApp
                         
                         if(condition_6_UserStoryCount==0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_6_UserStoryCount + "</td>");
+                            builder.Append("<td bgcolor=\"#ffe699\" class=\"text-td\">" + condition_6_UserStoryCount + "</td>");
                         } else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_6_UserStoryCount + "</b></td>");
+                            builder.Append("<td bgcolor=\"#ffe699\" class=\"text-td\"><b>" + condition_6_UserStoryCount + "</b></td>");
+                        }
+                        
+                        //Condition:7 New
+                        var condition7NewData = (from rSubCond7_New in dt_awaitingOnboardingDocumentPostSelfAssessment.AsEnumerable()
+                                                 where rSubCond7_New.Field<string>("SubGroup") == sugroupStrFmt
+                                                 && (rSubCond7_New.Field<string>("ServiceLine") == serviceOfferingName)
+                                                 select rSubCond7_New.Field<string>("WorkItemID"));
+                        condition_7New_UserStoryCount = condition7NewData.Distinct().Count();
+                        if (condition_7New_UserStoryCount == 0)
+                        {
+                            builder.Append("<td class=\"text-td\">" + condition_7New_UserStoryCount + "</td>");
+                        }
+                        else
+                        {
+                            builder.Append("<td class=\"text-td\"><b>" + condition_7New_UserStoryCount + "</b></td>");
                         }
 
-                        //Condition-7: Ready for Assessment Service Onboarding [Table: dt_ReadyForAssessmentServiceOnboarding]
+                        //Condition-8: Ready for Assessment Service Onboarding [Table: dt_ReadyForAssessmentServiceOnboarding]
                         var condition7Data = (from rSubCond7 in dt_ReadyForAssessmentServiceOnboarding.AsEnumerable()
                                               where rSubCond7.Field<string>("SubGroup") == sugroupStrFmt
                                               && (rSubCond7.Field<string>("ServiceLine") == serviceOfferingName)
@@ -1215,7 +1322,7 @@ namespace TFRestApiApp
                             builder.Append("<td class=\"text-td\"><b>" + condition_7_UserStoryCount + "</b></td>");
                         }
 
-                        //Condition-8: Assessment Service Onboarding In Progress [Table: dt_AssessmentServiceOnboardingInProgress]
+                        //Condition-9: Assessment Service Onboarding In Progress [Table: dt_AssessmentServiceOnboardingInProgress]
                         var condition8Data = (from rSubCond8 in dt_AssessmentServiceOnboardingInProgress.AsEnumerable()
                                               where rSubCond8.Field<string>("SubGroup") == sugroupStrFmt
                                               && (rSubCond8.Field<string>("ServiceLine") == serviceOfferingName)
@@ -1231,7 +1338,7 @@ namespace TFRestApiApp
                             builder.Append("<td class=\"text-td\"><b>" + condition_8_UserStoryCount + "</b></td>");
                         }
 
-                        //Condition-9: Scheduled for Grade Review Assessment [Table: dt_ScheduledForGradeReviewAssessment]
+                        //Condition-10: Scheduled for Grade Review Assessment [Table: dt_ScheduledForGradeReviewAssessment]
                         var condition9Data = (from rSubCond9 in dt_ScheduledForGradeReviewAssessment.AsEnumerable()
                                               where rSubCond9.Field<string>("SubGroup") == sugroupStrFmt
                                               && (rSubCond9.Field<string>("ServiceLine") == serviceOfferingName)
@@ -1240,14 +1347,14 @@ namespace TFRestApiApp
                         
                         if(condition_9_UserStoryCount==0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_9_UserStoryCount + "</td>");
+                            builder.Append("<td bgcolor=\"#FFD966\" class=\"text-td\">" + condition_9_UserStoryCount + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_9_UserStoryCount + "</b></td>");
+                            builder.Append("<td bgcolor=\"#FFD966\" class=\"text-td\"><b>" + condition_9_UserStoryCount + "</b></td>");
                         }
 
-                        //Condition-10: Grade Review Assessment in Progress [Table:dt_GradeReviewAssessmentInProgress]
+                        //Condition-11: Grade Review Assessment in Progress [Table:dt_GradeReviewAssessmentInProgress]
                         var condition10Data = (from rSubCond10 in dt_GradeReviewAssessmentInProgress.AsEnumerable()
                                               where rSubCond10.Field<string>("SubGroup") == sugroupStrFmt
                                               && (rSubCond10.Field<string>("ServiceLine") == serviceOfferingName)
@@ -1272,14 +1379,14 @@ namespace TFRestApiApp
 
                         if (condition_11_UserStoryCount == 0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_11_UserStoryCount + "</td>");
+                            builder.Append("<td bgcolor=\"#92D050\" class=\"text-td\">" + condition_11_UserStoryCount + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_11_UserStoryCount + "</b></td>");
+                            builder.Append("<td bgcolor=\"#92D050\" class=\"text-td\"><b>" + condition_11_UserStoryCount + "</b></td>");
                         }
 
-                        /*Condition-14: If Task ([Eng][Activity: Bug Remediation and Verification post Grade Review]) is in 
+                        /*Condition-13: If Task ([Eng][Activity: Bug Remediation and Verification post Grade Review]) is in 
                         New state - User Story count aggregated to show the numbers in “Bug Remediation Post CSEO Assessment 
                         Not Started" */
                         var condition14Data = (from rSubCond14 in dt_BugRemediationPostCSEOAssessmentNotStarted.AsEnumerable()
@@ -1290,15 +1397,15 @@ namespace TFRestApiApp
 
                         if (condition_14_BugRemediationPostCSEOAssessmentNotStarted == 0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_14_BugRemediationPostCSEOAssessmentNotStarted + "</td>");
+                            builder.Append("<td bgcolor=\"#A8D08D\" class=\"text-td\">" + condition_14_BugRemediationPostCSEOAssessmentNotStarted + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_14_BugRemediationPostCSEOAssessmentNotStarted + "</b></td>");
+                            builder.Append("<td bgcolor=\"#A8D08D\" class=\"text-td\"><b>" + condition_14_BugRemediationPostCSEOAssessmentNotStarted + "</b></td>");
                         }
 
 
-                        //14.	If Task ([Eng][Activity: Bug Remediation and Verification post Grade Review]) is in Closed state - User Story count aggregated to show the numbers in " CSEO Assessment Grade C Received"
+                        //Condition-14:	If Task ([Eng][Activity: Bug Remediation and Verification post Grade Review]) is in Active state - User Story count aggregated to show the numbers in " Bug Remediation Post CSEO Assessment In Progress"
                         var condition15Data = (from rSubCond14 in dt_BugRemediationPostCSEOAssessmentInProgress.AsEnumerable()
                                                where rSubCond14.Field<string>("SubGroup") == sugroupStrFmt
                                                && (rSubCond14.Field<string>("ServiceLine") == serviceOfferingName)
@@ -1307,15 +1414,15 @@ namespace TFRestApiApp
 
                         if (condition_15_BugRemediationPostCSEOAssessmentInProgress == 0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_15_BugRemediationPostCSEOAssessmentInProgress + "</td>");
+                            builder.Append("<td bgcolor=\"#A8D08D\" class=\"text-td\">" + condition_15_BugRemediationPostCSEOAssessmentInProgress + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_15_BugRemediationPostCSEOAssessmentInProgress + "</b></td>");
+                            builder.Append("<td bgcolor=\"#A8D08D\" class=\"text-td\"><b>" + condition_15_BugRemediationPostCSEOAssessmentInProgress + "</b></td>");
                         }
 
 
-                        //Condition-12: P3 Applications Grade C Applications Count [Table: dt_FY20GradeC]
+                        //Condition-15: P3 Applications Grade C Applications Count [Table: dt_FY20GradeC]
                         var condition12Data = (from rSubCond12 in dt_FY20GradeC.AsEnumerable()
                                                where rSubCond12.Field<string>("SubGroup") == sugroupStrFmt
                                                && (rSubCond12.Field<string>("ServiceLine") == serviceOfferingName)
@@ -1324,14 +1431,14 @@ namespace TFRestApiApp
                         
                         if(condition_12_UserStoryCount==0)
                         {
-                            builder.Append("<td class=\"text-td\">" + condition_12_UserStoryCount + "</td>");
+                            builder.Append("<td bgcolor=\"#00B050\" class=\"text-td\">" + condition_12_UserStoryCount + "</td>");
                         }
                         else
                         {
-                            builder.Append("<td class=\"text-td\"><b>" + condition_12_UserStoryCount + "</b></td>");
+                            builder.Append("<td bgcolor=\"#00B050\" class=\"text-td\"><b>" + condition_12_UserStoryCount + "</b></td>");
                         }
 
-                        //Condition-13: P3 Applications User Story Count [Table: dt_FY20UserStoryCount]
+                        //OveralCount: P3 Applications User Story Count [Table: dt_FY20UserStoryCount]
                         var condition13Data = (from rSubCond13 in allP3UserStories.AsEnumerable()
                                                where rSubCond13.Field<string>("Subgroup") == sugroupStrFmt
                                                && (rSubCond13.Field<string>("ServiceOffering") == serviceOfferingName)
@@ -1358,39 +1465,48 @@ namespace TFRestApiApp
                 }
             }
 
-            builder.Append("<tr class=\"percentage\" bgcolor=\"#D5C024\">");
+            builder.Append("<tr class=\"percentage\">");
             builder.Append("<th colspan=\"2\" scope=\"colgroup\">Total / Percentage</th>");
             builder.Append("<th>" + dt_SelfAssessmentToStart.Rows.Count + " / "+ (int)Math.Round((double)(100 * dt_SelfAssessmentToStart.Rows.Count) / allP3UserStories.Rows.Count) +"%"+"</th>");
             builder.Append("<th>" + dt_SelfAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_SelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#FFF2CC\">" + dt_SelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_SelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentNotStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#ffe699\">" + dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostSelfAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th>" + dt_awaitingOnboardingDocumentPostSelfAssessment.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_awaitingOnboardingDocumentPostSelfAssessment.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + dt_ReadyForAssessmentServiceOnboarding.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ReadyForAssessmentServiceOnboarding.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + dt_AssessmentServiceOnboardingInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_AssessmentServiceOnboardingInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_ScheduledForGradeReviewAssessment.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ScheduledForGradeReviewAssessment.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#FFD966\">" + dt_ScheduledForGradeReviewAssessment.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_ScheduledForGradeReviewAssessment.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + dt_GradeReviewAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_GradeReviewAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
-            builder.Append("<th>" + dt_FY20GradeC.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_FY20GradeC.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#91CF50\">" + dt_GradeReviewAssessmentCompleted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_GradeReviewAssessmentCompleted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#A8D08D\">" + dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostCSEOAssessmentNotStarted.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#A8D08D\">" + dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_BugRemediationPostCSEOAssessmentInProgress.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
+            builder.Append("<th bgcolor=\"#00B050\">" + dt_FY20GradeC.Rows.Count + " / " + (int)Math.Round((double)(100 * dt_FY20GradeC.Rows.Count) / allP3UserStories.Rows.Count) + "%" + "</th>");
             builder.Append("<th>" + allP3UserStories.Rows.Count + "</th>");
             builder.Append("</tr>");
             builder.Append("</table>");
             builder.Append("<br/>" +
                 "<ol lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>New</b> state – User Story count aggregated to show the numbers in &quot;<b>Self-Assessment Ready To Start</b>&quot; <o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b>Self-Assessment In Progress</b>&quot;<o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b>Self-Assessment Completed</b>&quot; <o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post Self-Assessment Not Started</b>&quot;<o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b>Bug Remediation Post Self-Assessment In Progress</b>&quot;<o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b>Bug Remediation Post Self-Assessment Completed</b>&quot; <o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Create Grade Review Onboarding Request]</i></b><i>)<b> </b></i>is <b>Closed</b> &amp; If Task (<b><i>[Activity:Onboarding]</i></b><i>)</i> is in <b>New</b> State - User Story count aggregated to show the numbers in “<b>CSEO</b> <b>Assessment Onboarding Ready to Start</b>&quot; <o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Create Grade Review Onboarding Request]</i></b>) is <b>Closed</b> &nbsp;&amp; If Task (<b><i>[Activity:Onboarding]</i></b><i>)</i> is in <b>Active</b> State - User Story count aggregated to show the numbers &nbsp;in &quot;<b> CSEO</b> <b>Assessment Onboarding In Progress</b> &quot;<o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Activity:Onboarding]) </i></b>is in <b>Closed</b> state and &nbsp;If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>New</b> State - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Onboarding Completed</b>&quot;<o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Grade Review In Progress</b>&quot; <o:p></o:p></span></li>" +
-                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Grade Review Completed</b>&quot; <o:p></o:p></span></li>" +
-                "<li><span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"> If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post CSEO Assessment Not Started</b> </span></li><li> <span>If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b> Bug Remediation Post CSEO Assessment In Progress</b>&quot;</span></li><li> <span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b> CSEO Assessment Grade C Received</b>&quot;</span></li></ol>");
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c1\">If Task </a> (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>New</b> state – User Story count aggregated to show the numbers in &quot;<b>Self-Assessment Not Started</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c2\">If Task </a> (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b>Self-Assessment In Progress</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c3\">If Task </a> (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b>Self-Assessment Completed</b>&quot; <o:p></o:p></span></li>" +
+                //"<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c4\">If Task </a> (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post Self-Assessment Not Started</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c4\">If Task </a> (<b><i>[Eng][Activity: Self-assessment and Bugs Logging</i></b>) is in <b>Closed</b> state and </span><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post Self-Assessment Not Started</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c5\">If Task</a> (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b>Bug Remediation Post Self-Assessment In Progress</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c6\">If Task</a> (<b><i>[Eng][Activity: Bugs Remediation post Self-assessment]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b>Bug Remediation Post Self-Assessment Completed</b>&quot; <o:p></o:p></span></li>" +
+
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c7\">If Task</a> (<b><i>([Eng][Activity: Bugs Remediation post Self-assessment])</i></b><i>)<b> </b></i>is <b>Closed</b> &amp; If Task (<b><i>([Eng][Activity: Create Grade Review Onboarding Request])</i></b><i>)</i> is not in <b>Closed</b> State - User Story count aggregated to show the numbers in “<b>Awaiting Onboarding Document Post Self-Assessment</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c8\">If Task</a> (<b><i>[Eng][Activity: Create Grade Review Onboarding Request]</i></b><i>)<b> </b></i>is <b>Closed</b> &amp; If Task (<b><i>[Activity:Onboarding]</i></b><i>)</i> is in <b>New</b> State - User Story count aggregated to show the numbers in “<b>CSEO</b> <b>Assessment Onboarding Not Started</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c9\">If Task</a> (<b><i>[Activity:Onboarding]</i></b><i>)</i> is in <b>Active</b> State - User Story count aggregated to show the numbers &nbsp;in &quot;<b> CSEO</b> <b>Assessment Onboarding In Progress</b> &quot;<o:p></o:p></span></li>" +
+                //"<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c9\">If Task</a> (<b><i>[Activity:Onboarding]) </i></b>is in <b>Closed</b> state and &nbsp;If Task (<b><i>[Activity:Assessment]</i></b>) is in <b>New</b> State - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Onboarding Completed</b>&quot;<o:p></o:p></span></li>" +
+                //"<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c9\">If Task</a> (<b><i>[Activity:Onboarding]) </i></b>is in <b>Closed</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Onboarding Completed</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c10\">If Task</a> (<b><i>[Activity:Onboarding]) </i></b>is in <b>Closed</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Onboarding Completed</b>&quot;<o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c11\">If Task</a> (<b><i>[Activity:Assessment]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Grade Review In Progress</b>&quot; <o:p></o:p></span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c12\">If Task</a> (<b><i>[Activity:Assessment]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers &nbsp;in &quot;<b>CSEO Assessment Grade Review Completed</b>&quot; <o:p></o:p></span></li>" +
+                //"<li><span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c12\">If Task</a> (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post CSEO Assessment Not Started</b> </span></li>" +
+                "<li><span lang=\"EN-IN\" style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c13\">If Task</a> (<b><i>[Activity:Assessment]</i></b>) is in <b>Closed</b> state and </span> <span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\">If Task (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>New</b> state - User Story count aggregated to show the numbers in “<b>Bug Remediation Post CSEO Assessment Not Started</b> </span></li>" +
+                "<li><span><a name=\"c14\">If Task</a> (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>Active</b> state - User Story count aggregated to show the numbers in &quot;<b> Bug Remediation Post CSEO Assessment In Progress</b>&quot;</span></li>" +
+                "<li><span style=\"font-size:9.0pt;font-family:&quot;Segoe UI&quot;,sans-serif\"><a name=\"c15\">If Task</a> (<b><i>[Eng][Activity: Bug Remediation and Verification post Grade Review]</i></b>) is in <b>Closed</b> state - User Story count aggregated to show the numbers in &quot;<b> CSEO Assessment Grade C Received</b>&quot;</span></li></ol>");
             builder.Append("</body>");
             builder.Append("</html>");
             string HtmlFile = builder.ToString();
@@ -1398,15 +1514,15 @@ namespace TFRestApiApp
             //Attachment emailAttachment = oMsg.Attachments.Add("D:\\Reports Excel\\AppP3UserStories\\P3UserStories.xlsx", Microsoft.Office.Interop.Outlook.OlAttachmentType.olByValue);
             
             //QA Test
-            //oMsg.To = ConfigurationManager.AppSettings["Prod_To_Test_P3ApplicationSend"];
+            //oMsg.To = ConfigurationManager.AppSettings["Prod_To_Draft_P3ApplicationSend"];
 
             //QA Draft
-            oMsg.To = ConfigurationManager.AppSettings["Prod_To_Draft_P3ApplicationSend"];
+            //oMsg.To = ConfigurationManager.AppSettings["Prod_To_Draft_P3ApplicationSend"];
             
 
             //Prod
-            //oMsg.To = ConfigurationManager.AppSettings["Prod_To_P3ApplicationSend"];
-            //oMsg.CC = ConfigurationManager.AppSettings["Prod_CC_P3ApplicationSend"];
+            oMsg.To = ConfigurationManager.AppSettings["Prod_To_P3ApplicationSend"];
+            oMsg.CC = ConfigurationManager.AppSettings["Prod_CC_P3ApplicationSend"];
 
             DateTime startAtMonday = DateTime.Now.AddDays(DayOfWeek.Monday - DateTime.Now.DayOfWeek);
             oMsg.Subject = "CSEO Assessment Service: CSEO FY20 P3 Accessibility Progress Scorecard - " + DateTime.Now.ToString("MM/dd/yyyy");
